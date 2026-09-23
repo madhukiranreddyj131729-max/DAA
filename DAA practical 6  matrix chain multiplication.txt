@@ -1,0 +1,58 @@
+#include <iostream>
+#include <vector>
+#include <climits>
+
+using namespace std;
+
+// Function to calculate minimum multiplication operations
+int matrixChainOrder(const vector<int>& p, int n) {
+    // m[i][j] stores the minimum number of scalar multiplications 
+    // needed to compute the matrix product A[i]...A[j]
+    vector<vector<int>> m(n, vector<int>(n, 0));
+
+    // L is the chain length (from length 2 to n-1)
+    for (int L = 2; L < n; L++) {
+        for (int i = 1; i < n - L + 1; i++) {
+            int j = i + L - 1;
+            m[i][j] = INT_MAX;
+
+            for (int k = i; k <= j - 1; k++) {
+                // q = cost/scalar multiplications
+                int q = m[i][k] + m[k + 1][j] + p[i - 1] * p[k] * p[j];
+                if (q < m[i][j]) {
+                    m[i][j] = q;
+                }
+            }
+        }
+    }
+
+    return m[1][n - 1]; // Result for multiplying A[1] through A[n-1]
+}
+
+int main() {
+    int numMatrices;
+    cout << "Enter the number of matrices: ";
+    cin >> numMatrices;
+
+    if (numMatrices < 1) {
+        cout << "Number of matrices must be at least 1." << endl;
+        return 0;
+    }
+
+    // Size of dimensions array is numMatrices + 1
+    vector<int> p(numMatrices + 1);
+
+    cout << "\nFor " << numMatrices << " matrices, enter " << numMatrices + 1 << " dimension values:" << endl;
+    cout << "(Example: Matrix 1 is p[0]xp[1], Matrix 2 is p[1]xp[2], etc.)" << endl;
+
+    for (int i = 0; i <= numMatrices; i++) {
+        cout << "p[" << i << "]: ";
+        cin >> p[i];
+    }
+
+    int minOps = matrixChainOrder(p, numMatrices + 1);
+
+    cout << "\nMinimum number of multiplications required: " << minOps << endl;
+
+    return 0;
+}
