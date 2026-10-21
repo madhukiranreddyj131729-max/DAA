@@ -1,0 +1,105 @@
+#include <iostream>
+#include <vector>
+#include <algorithm>
+using namespace std;
+
+struct Edge
+{
+    int u, v, weight;
+};
+
+// Find parent of a vertex
+int findParent(int parent[], int x)
+{
+    if (parent[x] == x)
+        return x;
+
+    return parent[x] = findParent(parent, parent[x]);
+}
+
+// Join two sets
+void unionSet(int parent[], int rank[], int u, int v)
+{
+    u = findParent(parent, u);
+    v = findParent(parent, v);
+
+    if (rank[u] < rank[v])
+        parent[u] = v;
+    else if (rank[u] > rank[v])
+        parent[v] = u;
+    else
+    {
+        parent[v] = u;
+        rank[u]++;
+    }
+}
+
+int main()
+{
+    int V, E;
+
+    cout << "Enter number of vertices: ";
+    cin >> V;
+
+    cout << "Enter number of edges: ";
+    cin >> E;
+
+    vector<Edge> edges(E);
+
+    cout << "Enter edges (u v weight):\n";
+
+    for (int i = 0; i < E; i++)
+    {
+        cin >> edges[i].u >> edges[i].v >> edges[i].weight;
+    }
+
+    // Sort edges by weight
+    sort(edges.begin(), edges.end(),
+         [](Edge a, Edge b)
+         {
+             return a.weight < b.weight;
+         });
+
+    int parent[V];
+    int rank[V];
+
+    for (int i = 0; i < V; i++)
+    {
+        parent[i] = i;
+        rank[i] = 0;
+    }
+
+    int totalCost = 0;
+    int edgesSelected = 0;
+
+    cout << "\nEdges in Minimum Spanning Tree:\n";
+
+    for (Edge edge : edges)
+    {
+        int u = edge.u;
+        int v = edge.v;
+
+        int parentU = findParent(parent, u);
+        int parentV = findParent(parent, v);
+
+        // If different, adding edge won't create a cycle
+        if (parentU != parentV)
+        {
+            cout << u << " - " << v
+                 << " = " << edge.weight << endl;
+
+            totalCost += edge.weight;
+
+            unionSet(parent, rank, parentU, parentV);
+
+            edgesSelected++;
+
+            if (edgesSelected == V - 1)
+                break;
+        }
+    }
+
+    cout << "Minimum Cost = " << totalCost << endl;
+
+    return 0;
+}
